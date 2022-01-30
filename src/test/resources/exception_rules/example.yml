@@ -1,0 +1,6 @@
+class_equals: java.io.UncheckedIOException
+message_matches_either_of:
+  - "foo"
+cause_matches_either_of:
+  - class_equals: java.io.IOException
+    direct: true
