@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+    testImplementation "org.yaml:snakeyaml:1.30"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
 }
 
@@ -127,9 +128,9 @@ publishing {
         maven {  // publishMavenPublicationToMavenCentralRepository
             name = "mavenCentral"
             if (project.version.endsWith("-SNAPSHOT")) {
-                url "https://oss.sonatype.org/content/repositories/snapshots"
+                url "https://s01.oss.sonatype.org/content/repositories/snapshots"
             } else {
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
             }
 
             credentials {
