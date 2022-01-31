@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Sort/categorize a {@link java.lang.Throwable} object into {@code enum} based on a {@link java.util.Map}-based domain specific language (DSL).
+ * Sorts a {@link Throwable} object into an {@code enum} constant based on a {@link java.util.Map}-based domain specific language (DSL).
  *
  * <blockquote><pre>{@code  [
  *    {
@@ -47,9 +47,6 @@ import java.util.Set;
  *      "sorted_into": "EXPECTED_1"  // It expects the enum contains a constant "EXPECTED_1".
  *    }
  *  ]}</pre></blockquote>
- *
- * <p>It is designed to fail as fast as possible. All DSL errors are intended to be reported in constructing a {@link SortEx}
- * instance, not in sorting a {@link java.lang.Throwable} object.
  */
 public final class SortEx<E extends Enum<E>> {
     private SortEx(final Map<ExceptionRule, E> rules, final Class<E> enumClass) {
