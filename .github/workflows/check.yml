@@ -1,12 +1,19 @@
 name: Check
-on: push
+on:
+- push
+- pull_request
 jobs:
   check:
     runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up OpenJDK 8
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: "temurin"
