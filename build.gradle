@@ -1,38 +1,41 @@
-apply plugin: "java"
-apply plugin: "maven-publish"
-apply plugin: "signing"
-apply plugin: "checkstyle"
-
-group = "dev.jigue"
-version = "0.1.0-SNAPSHOT"
-description "A Java Exception sorter"
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-configurations {
-    compileClasspath.resolutionStrategy.activateDependencyLocking()
-    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+plugins {
+    id "java"
+    id "maven-publish"
+    id "signing"
+    id "checkstyle"
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
-    testImplementation "org.yaml:snakeyaml:1.30"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+group = "dev.jigue"
+version = "0.1.0-SNAPSHOT"
+description "A Java Exception sorter"
+
+configurations {
+    compileClasspath.resolutionStrategy.activateDependencyLocking()
+    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
     options.encoding = "UTF-8"
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+
     withJavadocJar()
     withSourcesJar()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+    testImplementation "org.yaml:snakeyaml:1.30"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
 }
 
 javadoc {
@@ -45,49 +48,40 @@ javadoc {
     }
 }
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        outputs.upToDateWhen { false }
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        showCauses = true
-        showExceptions = true
-        showStackTraces = true
-        showStandardStreams = true
-        events "passed", "skipped", "failed", "standardOut", "standardError"
+jar {
+    metaInf {
+        from rootProject.file("LICENSE")
     }
 }
 
-checkstyle {
-    toolVersion "9.2.1"
-    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
-    configProperties = [
-        "checkstyle.config.path": file("${projectDir}/config/checkstyle")
-    ]
-    ignoreFailures = false
-    maxWarnings = 0
-}
-
-jar {
-    from rootProject.file("LICENSE")
-    from rootProject.file("NOTICE")
-}
-
 sourcesJar {
-    from rootProject.file("LICENSE")
-    from rootProject.file("NOTICE")
+    metaInf {
+        from rootProject.file("LICENSE")
+    }
 }
 
 javadocJar {
-    from rootProject.file("LICENSE")
-    from rootProject.file("NOTICE")
+    metaInf {
+        from rootProject.file("LICENSE")
+    }
+}
+
+task checkDependencies {
+    notCompatibleWithConfigurationCache("The task \"checkDependencies\" filters configurations at execution time.")
+    doLast {
+        configurations.findAll { it.canBeResolved }.each { it.resolve() }
+    }
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = "${project.group}"
-            artifactId = "${project.name}"
+            groupId = project.group
+            artifactId = project.name
 
             from components.java
             // javadocJar and sourcesJar are added by java.withJavadocJar() and java.withSourcesJar() above.
@@ -96,8 +90,8 @@ publishing {
             pom {  // https://central.sonatype.org/pages/requirements.html
                 packaging "jar"
 
-                name = "${project.name}"
-                description = "${project.description}"
+                name = project.name
+                description = project.description
                 url = "https://github.com/dmikurube/sortex"
 
                 licenses {
@@ -105,6 +99,7 @@ publishing {
                         // http://central.sonatype.org/pages/requirements.html#license-information
                         name = "The Apache License, Version 2.0"
                         url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
                     }
                 }
 
@@ -143,4 +138,27 @@ publishing {
 
 signing {
     sign publishing.publications.maven
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        outputs.upToDateWhen { false }
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showExceptions = true
+        showStackTraces = true
+        showStandardStreams = true
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+}
+
+checkstyle {
+    toolVersion "9.2.1"
+    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
+    configProperties = [
+        "checkstyle.config.path": file("${projectDir}/config/checkstyle")
+    ]
+    ignoreFailures = false
+    maxWarnings = 0
 }
